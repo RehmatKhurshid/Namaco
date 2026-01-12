@@ -1,5 +1,7 @@
 import User from "../../models/user/users.js";
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+
 
 
 export const getAllUser = async (req, res) => {
@@ -100,27 +102,33 @@ export const signUp = async (req, res) => {
 
 export const signIn = async (req, res, next) => {
     try {
+        console.log("i am here")
+        console.log('req.body:', req.body);
+        //console.log('req.headers:', req.headers);
+        console.log('email')
         const { email, password } = req.body;
+        console.log(email)
+        console.log(password)
         console.log("here")
 
         //find email
         const isUser = await User.findOne({ email: email });
-
+        console.log("userrrrrrrrs")
         if (!isUser) {
             return res.status(409).json({ "message": "invalid creds" })
         }
 
         //campare password
-
         const isPasswordMacthing = await bcrypt.compare(password, isUser.password);
-
+        console.log('password matching block')
         if (!isPasswordMacthing) {
             return res.status(400).json({ "message": "invalid creds" })
         }
-
+        console.log("token k upar")
         //create token
-        const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+        const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        //console.log("token nai milla")
+        console.log(token)
         //send response
 
         res.status(201).json({
@@ -134,7 +142,7 @@ export const signIn = async (req, res, next) => {
 
 
     } catch (error) {
-        console.log('inside login')
+        console.log('inside login catch')
         res.status(500).json({ "message": "something went wrong" })
     }
 }
