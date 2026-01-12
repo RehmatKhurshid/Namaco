@@ -10,9 +10,9 @@ const blogSchema = new mongoose.Schema({
     likeCount: {
         type: Number,
     },
-    imageUrl: {
-        type: String
-    },
+    // imageUrl: {
+    //     type: String
+    // },
     comment: {
         type: String,
     },
