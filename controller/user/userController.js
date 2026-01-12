@@ -1,4 +1,6 @@
 import User from "../../models/user/users.js";
+import bcrypt from 'bcrypt'
+
 
 export const getAllUser = async (req, res) => {
     try {
@@ -21,7 +23,7 @@ export const getUserById = async (req, res) => {
         console.log(error);
     }
 };
-
+/** 
 export const registerUser = async (req, res) => {
     try {
         if (
@@ -49,6 +51,98 @@ export const registerUser = async (req, res) => {
         console.log(error);
     }
 };
+*/
+
+export const signUp = async (req, res) => {
+    try {
+        if (
+            !req.body ||
+            !req.body.firstName ||
+            !req.body.lastName ||
+            !req.body.email ||
+            !req.body.mobile ||
+            !req.body.password
+        ) {
+            return res.status(400).json({ error: "some field is missing" });
+        }
+
+        const { firstName, lastName, email, mobile, password } = req.body;
+
+        // check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: "User already exists" });
+        }
+
+        // hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            mobile,
+            password: hashedPassword
+        });
+
+        await user.save();
+
+        res.status(201).json({ message: "User registered successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
+
+export const signIn = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        console.log("here")
+
+        //find email
+        const isUser = await User.findOne({ email: email });
+
+        if (!isUser) {
+            return res.status(409).json({ "message": "invalid creds" })
+        }
+
+        //campare password
+
+        const isPasswordMacthing = await bcrypt.compare(password, isUser.password);
+
+        if (!isPasswordMacthing) {
+            return res.status(400).json({ "message": "invalid creds" })
+        }
+
+        //create token
+        const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        //send response
+
+        res.status(201).json({
+            id: isUser._id,
+            email: isUser.email,
+            firstName: isUser.firstName,
+            lastName: isUser.lastName,
+            mobile: isUser.mobile,
+            token
+        })
+
+
+    } catch (error) {
+        console.log('inside login')
+        res.status(500).json({ "message": "something went wrong" })
+    }
+}
+
+
+
+
+
 export const updateUser = async (req, res) => {
     try {
         const upUser = await User.findByIdAndUpdate(
