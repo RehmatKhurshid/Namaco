@@ -1,29 +1,27 @@
 import User from "../../models/user/users.js";
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-
-
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const getAllUser = async (req, res) => {
-    try {
-        const data = await User.find();
-        console.log(data);
-        res.status(200).json(data);
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    const data = await User.find();
+    console.log(data);
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+  }
 };
 export const getUserById = async (req, res) => {
-    try {
-        const getId = await User.findById(req.params.id);
+  try {
+    const getId = await User.findById(req.params.id);
 
-        if (!getId) {
-            return res.status(404).json({ error: "user not found" });
-        }
-        res.status(200).json({ getId });
-    } catch (error) {
-        console.log(error);
+    if (!getId) {
+      return res.status(404).json({ error: "user not found" });
     }
+    res.status(200).json({ getId });
+  } catch (error) {
+    console.log(error);
+  }
 };
 /** 
 export const registerUser = async (req, res) => {
@@ -56,129 +54,120 @@ export const registerUser = async (req, res) => {
 */
 
 export const signUp = async (req, res) => {
-    try {
-        if (
-            !req.body ||
-            !req.body.firstName ||
-            !req.body.lastName ||
-            !req.body.email ||
-            !req.body.mobile ||
-            !req.body.password
-        ) {
-            return res.status(400).json({ error: "some field is missing" });
-        }
-
-        const { firstName, lastName, email, mobile, password } = req.body;
-
-        // check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: "User already exists" });
-        }
-
-        // hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const user = new User({
-            firstName,
-            lastName,
-            email,
-            mobile,
-            password: hashedPassword
-        });
-
-        await user.save();
-
-        res.status(201).json({ message: "User registered successfully" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Server error" });
+  try {
+    if (
+      !req.body ||
+      !req.body.firstName ||
+      !req.body.lastName ||
+      !req.body.email ||
+      !req.body.mobile ||
+      !req.body.password
+    ) {
+      return res.status(400).json({ error: "some field is missing" });
     }
+
+    const { firstName, lastName, email, mobile, password } = req.body;
+
+    // check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    // hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      mobile,
+      password: hashedPassword,
+    });
+
+    await user.save();
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
-
-
-
 
 export const signIn = async (req, res, next) => {
-    try {
-        console.log("i am here")
-        console.log('req.body:', req.body);
-        //console.log('req.headers:', req.headers);
-        console.log('email')
-        const { email, password } = req.body;
-        console.log(email)
-        console.log(password)
-        console.log("here")
+  try {
+    // console.log('req.body:', req.body);
+    //console.log('req.headers:', req.headers);
+    console.log("email");
+    const { email, password } = req.body;
+    console.log(email);
+    console.log(password);
+    console.log("here");
 
-        //find email
-        const isUser = await User.findOne({ email: email });
-        console.log("userrrrrrrrs")
-        if (!isUser) {
-            return res.status(409).json({ "message": "invalid creds" })
-        }
-
-        //campare password
-        const isPasswordMacthing = await bcrypt.compare(password, isUser.password);
-        console.log('password matching block')
-        if (!isPasswordMacthing) {
-            return res.status(400).json({ "message": "invalid creds" })
-        }
-        console.log("token k upar")
-        //create token
-        const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
-        //console.log("token nai milla")
-        console.log(token)
-        //send response
-
-        res.status(201).json({
-            id: isUser._id,
-            email: isUser.email,
-            firstName: isUser.firstName,
-            lastName: isUser.lastName,
-            mobile: isUser.mobile,
-            token
-        })
-
-
-    } catch (error) {
-        console.log('inside login catch')
-        res.status(500).json({ "message": "something went wrong" })
+    //find email
+    const isUser = await User.findOne({ email: email });
+    console.log("userrrrrrrrs");
+    if (!isUser) {
+      return res.status(409).json({ message: "invalid creds" });
     }
-}
 
+    //campare password
+    const isPasswordMacthing = await bcrypt.compare(password, isUser.password);
+    console.log("password matching block");
+    if (!isPasswordMacthing) {
+      return res.status(400).json({ message: "invalid creds" });
+    }
+    // console.log("token k upar")
+    //create token
+    const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "8h",
+    });
+    //console.log("token nai milla")
+    console.log(token);
+    //send response
 
-
-
-
+    res.status(201).json({
+      id: isUser._id,
+      email: isUser.email,
+      firstName: isUser.firstName,
+      lastName: isUser.lastName,
+      mobile: isUser.mobile,
+      token,
+    });
+  } catch (error) {
+    console.log("inside login catch");
+    res.status(500).json({ message: "something went wrong" });
+  }
+};
 export const updateUser = async (req, res) => {
-    try {
-        const upUser = await User.findByIdAndUpdate(
-            req.params.id,
-            {
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                email: req.body.email,
-                mobile: req.body.mobile,
-            },
-            { new: true }
-        );
+  try {
+    const upUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        mobile: req.body.mobile,
+      },
+      { new: true }
+    );
 
-        if (!upUser) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        res.status(200).json(upUser);
-    } catch (error) {
-        res.status(500).json({ error: "server error" });
+    if (!upUser) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    res.status(200).json(upUser);
+  } catch (error) {
+    res.status(500).json({ error: "server error" });
+  }
 };
 export const deleteUser = async (req, res) => {
-    const user = await User.findByIdAndDelete(req.params.id);
+  const user = await User.findByIdAndDelete(req.params.id);
 
-    if (!user) {
-        return res.status(404).json({ error: "User not found" });
-    }
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
 
-    res.status(200).json({ message: "User deleted" });
+  res.status(200).json({ message: "User deleted" });
 };

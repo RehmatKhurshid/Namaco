@@ -13,8 +13,8 @@ dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/user', userRouter)
-app.use('/api/blog', blogRouter)
+app.use('/user', userRouter)
+app.use('/blog', blogRouter)
 
 const PORT = 3000
 
