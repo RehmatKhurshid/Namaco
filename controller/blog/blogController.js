@@ -15,6 +15,7 @@ export const createBlog = async (req, res, next) => {
             likeCount,
             user: req.user._id
         })
+        console.log(req.user._id);
 
         await blog.save()
         res.status(201).json({ "message": "blog created succesfully" })
