@@ -1,15 +1,18 @@
 import express from 'express';
 import { deleteUser, getAllUser, getUserById, signIn, signUp, updateUser } from '../../controller/user/userController.js';
 import {isAuthenticated} from '../../middleware/userMiddleware.js';
-
+import { signInValidation } from '../../validators/signin.validation.js';
+import { signUpValidator } from '../../validators/user.validator.js';
+import validate from '../../middleware/validate.middleware.js';
+import allowRoles from '../../middleware/role.middleware.js';
 
 const userRouter = express.Router();
 
 //userRouter.get('/', getAllUser);
 //userRouter.get('/:id', getUserById);
-userRouter.post('/signup', signUp);
-userRouter.post('/signin', signIn);
+userRouter.post('/signup',signUpValidator,validate, signUp);
+userRouter.post('/signin',signInValidation,validate, signIn);
 userRouter.put('/:id',isAuthenticated ,updateUser);
-userRouter.delete('/:id',isAuthenticated, deleteUser);
+userRouter.delete('/:id',isAuthenticated, allowRoles('admin'),deleteUser);
 
 export default userRouter;
