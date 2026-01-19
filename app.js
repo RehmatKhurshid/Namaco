@@ -3,6 +3,7 @@ import connectDB from "./utils/db/mongo.js";
 import userRouter from "./route/user/userRoute.js"
 import blogRouter from "./route/blog/blogRoute.js";
 import dotenv from 'dotenv';
+import { errorHandler } from "./middleware/errorMiddleware.js";
 
 const app = express();
 connectDB();
@@ -12,9 +13,11 @@ dotenv.config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(errorHandler)
 
 app.use('/user', userRouter)
 app.use('/blog', blogRouter)
+
 
 const PORT = 3000
 

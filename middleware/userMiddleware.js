@@ -20,7 +20,8 @@ export const isAuthenticated = async (req, res, next) => {
             _id:user._id.toString(),
             firstName:user.firstName,
             lastName:user.lastName,
-            email:user.email
+            email:user.email,
+            roles: user.roles
         };
         console.log(req.user);
         next()

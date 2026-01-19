@@ -16,7 +16,9 @@ export const getUserById = async (req, res) => {
     const getId = await User.findById(req.params.id);
 
     if (!getId) {
-      return res.status(404).json({ error: "user not found" });
+      const error = new Error("user not found");
+      error.statusCode = 404;
+      throw error;
     }
     res.status(200).json({ getId });
   } catch (error) {
@@ -120,8 +122,8 @@ export const signIn = async (req, res, next) => {
     }
     // console.log("token k upar")
     //create token
-    const token = jwt.sign({ _id: isUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "8h",
+    const token = jwt.sign({ _id: isUser._id, role:isUser.roles }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
     });
     //console.log("token nai milla")
     console.log(token);
@@ -133,7 +135,8 @@ export const signIn = async (req, res, next) => {
       firstName: isUser.firstName,
       lastName: isUser.lastName,
       mobile: isUser.mobile,
-      token,
+      roles:isUser.roles,
+      token
     });
   } catch (error) {
     console.log("inside login catch");
@@ -154,7 +157,9 @@ export const updateUser = async (req, res) => {
     );
 
     if (!upUser) {
-      return res.status(404).json({ error: "User not found" });
+      const error = new Error("user not found");
+      error.statusCode = 404;
+      throw error;
     }
 
     res.status(200).json(upUser);
