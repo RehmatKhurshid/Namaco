@@ -23,6 +23,15 @@ const blogSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Text search index
+blogSchema.index({
+  title: 'text',
+  description: 'text'
+});
+
+// Pagination / sorting
+blogSchema.index({ createdAt: -1 });
+
 const Blog = mongoose.model('Blog', blogSchema);
 
 export default Blog

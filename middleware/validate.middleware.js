@@ -1,13 +1,15 @@
 import { validationResult } from "express-validator";
 
  const validate = (req, res, next) => {
-  const errors = validationResult(req);
+  const error = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    const error = new Error(errors.array()[0].msg);
+  if (!error.isEmpty()) {
+    const error = new Error(error.msg);
     error.statusCode = 400;
     throw error;
   }
+
+
 
   next();
 };
