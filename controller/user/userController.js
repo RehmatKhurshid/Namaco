@@ -1,4 +1,5 @@
 import User from "../../models/user/users.js";
+import { isAuthenticated } from "../../middleware/userMiddleware.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -8,7 +9,7 @@ export const getAllUser = async (req, res) => {
     console.log(data);
     res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 export const getUserById = async (req, res) => {
@@ -22,7 +23,7 @@ export const getUserById = async (req, res) => {
     }
     res.status(200).json({ getId });
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 /** 
@@ -57,16 +58,6 @@ export const registerUser = async (req, res) => {
 
 export const signUp = async (req, res) => {
   try {
-    if (
-      !req.body ||
-      !req.body.firstName ||
-      !req.body.lastName ||
-      !req.body.email ||
-      !req.body.mobile ||
-      !req.body.password
-    ) {
-      return res.status(400).json({ error: "some field is missing" });
-    }
 
     const { firstName, lastName, email, mobile, password } = req.body;
 
@@ -96,6 +87,45 @@ export const signUp = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+export const updatePassword= async(req,res,next)=>
+{
+  try {
+
+    console.log("hello world");
+    const userId = req.user._id
+    //console.log(userId); 
+
+    const{oldPassword, newPassword}=req.body
+    //console.log(oldPassword,newPassword);
+
+    const user=await User.findById(userId)
+    //console.log(userId);
+
+    if(!user)
+    {
+      return res.status(404).json({message:"user not found"});
+    }
+    //console.log(user.password);
+    const isPasswordMacthing=await bcrypt.compare(oldPassword,user.password);
+    if(!isPasswordMacthing)
+    {
+      return res.status(400).json({message:"incorrect password"});
+    }
+
+    const salt=await bcrypt.genSalt(10);
+    const newHashedPassword=await bcrypt.hash(newPassword,salt);
+   // console.log(newHashedPassword);
+
+    user.password= newHashedPassword;
+    await user.save();
+
+    res.status(200).json({message:"password changed successfully"});
+    
+  } catch (error) {
+    res.status(500).json({ message: "something went wrong" });
+  }
+};
+
 
 export const signIn = async (req, res, next) => {
   try {
@@ -109,7 +139,7 @@ export const signIn = async (req, res, next) => {
 
     //find email
     const isUser = await User.findOne({ email: email });
-    console.log("userrrrrrrrs");
+   // console.log("userrrrrrrrs");
     if (!isUser) {
       return res.status(409).json({ message: "invalid creds" });
     }
@@ -130,6 +160,7 @@ export const signIn = async (req, res, next) => {
     //send response
 
     res.status(201).json({
+      message:"login Successful",
       id: isUser._id,
       email: isUser.email,
       firstName: isUser.firstName,
