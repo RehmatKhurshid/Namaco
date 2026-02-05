@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from  "./button"
 
 export default function Navbar() {
   return (
@@ -14,3 +14,4 @@ export default function Navbar() {
     </nav>
   )
 }
+
