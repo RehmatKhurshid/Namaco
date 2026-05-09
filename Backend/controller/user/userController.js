@@ -153,7 +153,7 @@ export const signIn = async (req, res, next) => {
     // console.log("token k upar")
     //create token
     const token = jwt.sign({ _id: isUser._id, role:isUser.roles }, process.env.JWT_SECRET, {
-      expiresIn: "10m",
+      expiresIn: "7d",
     });
     //console.log("token nai milla")
     console.log(token);
