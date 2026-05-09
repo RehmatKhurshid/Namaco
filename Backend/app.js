@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import  apiLimiter  from "./middleware/rateLimit-middleware.js";
 import helmet from "helmet";
+import cors from "cors";
 
 const app = express();
 connectDB();
@@ -13,6 +14,12 @@ dotenv.config();
 
 //console.log('JWT_SECRET:', process.env.JWT_SECRET);
 app.use(helmet());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(apiLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -1,12 +1,32 @@
-import Navbar from "./components/ui/Navbar"
+// src/App.tsx
 
-export default function App() {
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/ui/Navbar";
+import Signin from "./pages/signin";
+import Signup from "./pages/signup";
+import Dashboard from "./pages/dashboard";
+import Home from "./pages/home";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+function App() {
   return (
-    <>
+    <BrowserRouter>
       <Navbar />
-      <main className="max-w-6xl mx-auto p-4">
-        Content goes here
-      </main>
-    </>
-  )
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
+
+export default App;

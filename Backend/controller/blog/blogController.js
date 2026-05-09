@@ -39,7 +39,7 @@ export const getallBlog = async (req, res, next) => {
       : {};
 
     const blogs = await Blog.find(searchQuery)
-      .populate("user", "firstName email")
+      .populate("user", "firstName lastName")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -53,13 +53,14 @@ export const getallBlog = async (req, res, next) => {
       totalBlogs,
       blogs,
     });
+    console.log(blogs);
   } catch (error) {
     next(error);
   }
 };
 export const getBlogbyId = async (req, res) => {
   try {
-    const getId = await Blog.findById(req.params.id).populate('user', 'firstName email') // ONLY required field;
+    const getId = await Blog.findById(req.params.id).populate('user', 'firstName lastName') // ONLY required field;
     console.log(getId);
     if (!getId) {
       const error = new Error("user not found");
@@ -68,6 +69,7 @@ export const getBlogbyId = async (req, res) => {
     }
 
     res.status(200).json(getId);
+    console.log(getId);
   } catch (error) {
     console.log(error);
   }
