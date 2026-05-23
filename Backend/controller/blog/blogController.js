@@ -29,7 +29,7 @@ export const createBlog = async (req, res, next) => {
 export const getallBlog = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
     const search = req.query.search || "";
 
     const skip = (page - 1) * limit;
@@ -42,8 +42,9 @@ export const getallBlog = async (req, res, next) => {
       .populate("user", "firstName lastName")
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
-
+      .sort({ createdAt: -1 })
+      .lean();
+      
     const totalBlogs = await Blog.countDocuments(searchQuery);
 
     res.status(200).json({
@@ -58,20 +59,27 @@ export const getallBlog = async (req, res, next) => {
     next(error);
   }
 };
-export const getBlogbyId = async (req, res) => {
+export const getBlogbyId = async (req, res, next) => {
   try {
-    const getId = await Blog.findById(req.params.id).populate('user', 'firstName lastName') // ONLY required field;
-    console.log(getId);
-    if (!getId) {
-      const error = new Error("user not found");
-      error.statusCode = 404;
-      throw error;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid blog ID",
+      });
     }
 
-    res.status(200).json(getId);
-    console.log(getId);
+    const blog = await Blog.findById(req.params.id)
+      .populate("user", "firstName lastName");
+
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found",
+      });
+    }
+
+    res.status(200).json(blog);
+
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 
@@ -97,29 +105,29 @@ export const updateBlog = async (req, res, next) => {
 export const deleteBlog = async (req, res, next) => {
   try {
     const blogId = req.params.id;
-    console.log("blogId", blogId);
     const userId = req.user._id;
-    // console.log('userid', userId);
 
     const blog = await Blog.findById(blogId);
 
-    console.log("blog", blog);
-
     if (!blog) {
-      const error = new Error("Blog not found");
-      error.statusCode = 404;
-      throw error;
+      return res.status(404).json({
+        message: "Blog not found",
+      });
     }
-    // Check if the user making the request is the owner of the blog
-    /** if (blog.user._id.toString() !== userId.toString()) {
-            return res.status(403).json({ "message": "You are not authorized to delete this blog" });
-        }*/
 
-    await Blog.findByIdAndDelete(blogId);
+    if (blog.user.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message: "You are not authorized to delete this blog",
+      });
+    }
 
-    res.status(200).json({ message: "Blog deleted successfully" });
+    await blog.deleteOne();
+
+    res.status(200).json({
+      message: "Blog deleted successfully",
+    });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Something went wrong" });
+    next(error);
   }
 };

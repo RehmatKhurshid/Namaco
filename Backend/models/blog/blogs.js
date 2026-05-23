@@ -1,37 +1,59 @@
 import mongoose from "mongoose";
 
-const blogSchema = new mongoose.Schema({
+const blogSchema = new mongoose.Schema(
+  {
     title: {
-        type: String,
+      type: String,
+      required: true,
+      trim: true,
     },
+
     description: {
-        type: String,
+      type: String,
+      required: true,
+      trim: true,
     },
+
     likeCount: {
-        type: Number,
+      type: Number,
+      default: 0,
     },
-    // imageUrl: {
-    //     type: String
-    // },
-    comment: {
-        type: String,
+
+    comments: [
+      {
+        text: {
+          type: String,
+          trim: true,
+        },
+
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    user:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }
+  },
+  { timestamps: true }
+);
 
-}, { timestamps: true });
-
-// Text search index
 blogSchema.index({
-  title: 'text',
-  description: 'text'
+  title: "text",
+  description: "text",
 });
 
-// Pagination / sorting
 blogSchema.index({ createdAt: -1 });
 
-const Blog = mongoose.model('Blog', blogSchema);
+const Blog = mongoose.model("Blog", blogSchema);
 
-export default Blog
+export default Blog;
